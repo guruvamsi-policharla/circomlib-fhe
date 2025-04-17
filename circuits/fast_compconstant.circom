@@ -135,6 +135,6 @@ template parallel LtConstantN(ct, N) {
     signal input in[N];
     
     for (var i = 0; i < N; i++) {
-        parallel LtConstant(ct)(in[i]);
+        LtConstant(ct)(in[i]);
     }
 }
