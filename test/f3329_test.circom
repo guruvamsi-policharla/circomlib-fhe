@@ -1,6 +1,7 @@
 pragma circom 2.1.0;
 
 include "../circuits/add.circom";
+include "../circuits/mul.circom";
 
 template TestAdd() {
     log("\n********** TEST AddLWE **********\n");
@@ -36,6 +37,27 @@ template TestSub() {
     signal output result <-- RESULT;
 }
 
+template TestMul() {
+    log("\n********** TEST MulLWE **********\n");
+
+    var n = 1;
+    var q = 3329;
+
+    var in1[1] = [3328];
+    var in2[1] = [3328];
+    var should_be_out[1] = [1];
+
+    var out[1] = MulPointwise(1, q)(in1, in2);
+
+    var RESULT = 1;
+    for (var i=0; i<n; i++) {
+        RESULT = RESULT && (out[i] == should_be_out[i]);
+    }
+    
+    log("RESULT: ", RESULT);
+    signal output result <-- RESULT;
+}
+
 template TestAll() {
     log("\n******************** TESTING lwe.circom ********************\n\n");
 
@@ -46,7 +68,10 @@ template TestAll() {
     total = total && res;  
 
     res = TestSub()();
-    total = total && res;  
+    total = total && res; 
+
+    res = TestMul()();
+    total = total && res; 
 
     log("********************\n", "TOTAL RESULT: ", total, "\n********************\n");
 }
