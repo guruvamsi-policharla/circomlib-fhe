@@ -4,7 +4,7 @@ include "../circuits/add.circom";
 include "../circuits/mul.circom";
 
 template TestAdd() {
-    log("\n********** TEST AddLWE **********\n");
+    log("\n********** TEST Add **********\n");
 
     var n = 1;
     var q = 3329;
@@ -21,7 +21,7 @@ template TestAdd() {
 }
 
 template TestSub() {
-    log("\n********** TEST SubLWE **********\n");
+    log("\n********** TEST Sub **********\n");
 
     var n = 1;
     var q = 3329;
@@ -38,7 +38,7 @@ template TestSub() {
 }
 
 template TestMul() {
-    log("\n********** TEST MulLWE **********\n");
+    log("\n********** TEST Mul **********\n");
 
     var n = 1;
     var q = 3329;
@@ -59,7 +59,7 @@ template TestMul() {
 }
 
 template TestAll() {
-    log("\n******************** TESTING lwe.circom ********************\n\n");
+    log("\n******************** TESTING f3329.circom ********************\n\n");
 
     var total = 1;
     var res;
