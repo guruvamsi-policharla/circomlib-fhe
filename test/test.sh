@@ -11,7 +11,7 @@ fi
 
 mkdir -p out
 
-circom $1_test.circom -l .. --c -o out
+circom $1_test.circom -l .. --r1cs --c -o out
 
 cd out/$1_test_cpp
  

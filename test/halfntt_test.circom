@@ -41,9 +41,16 @@ template TestNTT() {
         RESULT = RESULT && (should_be_out[i] == out[i]);
     }
 
+    var should_be_in[n] = inv_halfNTT(n)(out);
+    for (var i=0; i<n; i++) {
+        RESULT = RESULT && (in[i] == should_be_in[i]);
+    }
+
     log("RESULT: ", RESULT, "\n");
     signal output result <-- RESULT;
 }
+
+
 
 template TestAll() {
     log("\n******************** TESTING ntt.circom ********************\n\n");
