@@ -29,11 +29,62 @@ template samplePolyCBD(l,eta) {
 template kyber_enc() {
     var q = 3329;
     var n = 256;
+    var k = 2;
 
-    signal input r[2][n];
-    signal input e1[2][n];
-    signal input e2[n];
+    var eta1 = 3;
+    var eta2 = 2;
+
+    var l1 = 2*eta1*n;
+    var l2 = 2*eta2*n;
+
+    signal input randomness[n];
     signal input m[n]; // entries in {0,1665}
+
+    // sample r, e1, e2
+    var zero[8] = [0,0,0,0,0,0,0,0];
+    var one[8] = [1,0,0,0,0,0,0,0];
+    var two[8] = [0,1,0,0,0,0,0,0];
+    var three[8] = [1,1,0,0,0,0,0,0];
+    var four[8] = [0,0,1,0,0,0,0,0];
+
+    signal shake_input_bits[5][33*8];
+    for (var i=0; i<32*8; i++) {
+        shake_input_bits[0][i] <== randomness[i];
+        shake_input_bits[1][i] <== randomness[i];
+        shake_input_bits[2][i] <== randomness[i];
+        shake_input_bits[3][i] <== randomness[i];
+        shake_input_bits[4][i] <== randomness[i];
+    }
+    for (var i=0; i<8; i++) {
+        shake_input_bits[0][i+32*8] <== zero[i];
+        shake_input_bits[1][i+32*8] <== one[i];
+        shake_input_bits[2][i+32*8] <== two[i];
+        shake_input_bits[3][i+32*8] <== three[i];
+        shake_input_bits[4][i+32*8] <== four[i];
+    }
+    
+    signal prf_r[2][l1]; 
+    prf_r[0] <== SHAKE256(33*8, l1)(shake_input_bits[0]);
+    prf_r[1] <== SHAKE256(33*8, l1)(shake_input_bits[1]);
+
+    signal prf_e1[2][l2];
+    prf_e1[0] <== SHAKE256(33*8, l2)(shake_input_bits[2]);
+    prf_e1[1] <== SHAKE256(33*8, l2)(shake_input_bits[3]);
+
+    signal prf_e2[l2];
+    prf_e2 <== SHAKE256(33*8, l2)(shake_input_bits[4]);
+    
+    signal r[2][n];
+    signal e1[2][n];
+    signal e2[n];
+
+    r[0] <== samplePolyCBD(l1,eta1)(prf_r[0]);
+    r[1] <== samplePolyCBD(l1,eta1)(prf_r[1]);
+
+    e1[0] <== samplePolyCBD(l2,eta2)(prf_e1[0]);
+    e1[1] <== samplePolyCBD(l2,eta2)(prf_e1[1]);
+
+    e2 <== samplePolyCBD(l2,eta2)(prf_e2);
 
     signal r_hat[2][n];
     r_hat[0] <== halfNTT()(r[0]);
