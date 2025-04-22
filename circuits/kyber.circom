@@ -3,6 +3,8 @@ pragma circom 2.1.0;
 include "half_ntt.circom";
 include "add.circom";
 include "lwe.circom";
+include "poseidon2/poseidon2_hash.circom";
+include "sha3/sha3_bits.circom";
 
 template samplePolyCBD(l,eta) {
     var n = 256;
@@ -164,12 +166,23 @@ template kyber_enc() {
         v[i] <== FastAddMod(q)([t_r_e2[i],m[i]]);
     }
 
-    signal output compressed_u[2][n];
-    signal output compressed_v[n];
+    signal compressed_u[2][n];
+    signal compressed_v[n];
 
     for (var i = 0; i < n; i++) {
         compressed_u[0][i] <== ModSwitchInt(1<<10, q)(u[0][i]);
         compressed_u[1][i] <== ModSwitchInt(1<<10, q)(u[1][i]);
         compressed_v[i] <== ModSwitchInt(1<<4, q)(v[i]);
     }
+
+    signal output h;
+    
+    signal poseidon_inputs[3*n];
+    for (var i = 0; i < n; i++) {
+        poseidon_inputs[i] <== compressed_u[0][i];
+        poseidon_inputs[n + i] <== compressed_u[1][i];
+        poseidon_inputs[2*n + i] <== compressed_v[i];
+    }
+
+    h <== Poseidon2_hash(3*n)(poseidon_inputs);
 }
