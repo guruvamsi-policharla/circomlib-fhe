@@ -5,47 +5,23 @@ include "../circuits/sha3/sha3_bytes.circom";
 template Test32Zeros() {
     log("\n******************** TESTING shake256 input 32 zeros ********************\n\n");
 
-    var should_be_out[32]; 
-    should_be_out[0] = 0xf5; 
-    should_be_out[1] = 0x97; 
-    should_be_out[2] = 0x7c;
-    should_be_out[3] = 0x82;
-    should_be_out[4] = 0x83;
-    should_be_out[5] = 0x54;
-    should_be_out[6] = 0x6a;
-    should_be_out[7] = 0x63;
-    should_be_out[8] = 0x72;
-    should_be_out[9] = 0x3b;
-    should_be_out[10] = 0xc3;
-    should_be_out[11] = 0x1d;
-    should_be_out[12] = 0x26;
-    should_be_out[13] = 0x19;
-    should_be_out[14] = 0x12;
-    should_be_out[15] = 0x4f;
-    should_be_out[16] = 0x11;
-    should_be_out[17] = 0xdb;
-    should_be_out[18] = 0x46;
-    should_be_out[19] = 0x58;
-    should_be_out[20] = 0x64;
-    should_be_out[21] = 0x33;
-    should_be_out[22] = 0x36;
-    should_be_out[23] = 0x74;
-    should_be_out[24] = 0x1d;
-    should_be_out[25] = 0xf8;
-    should_be_out[26] = 0x17;
-    should_be_out[27] = 0x57;
-    should_be_out[28] = 0xd5;
-    should_be_out[29] = 0xad;
-    should_be_out[30] = 0x30;
-    should_be_out[31] = 0x62;
-    component shake = SHAKE256_bytes(32, 32);
-    for (var i = 0; i < 32; i++) {
-        shake.inp_bytes[i] <== 0;
+    var should_be_out[192] = [192, 63, 204, 129, 231, 54, 9, 135, 91, 59, 152, 203, 148, 28, 120, 6, 88, 90, 247, 206, 54, 118, 190, 26, 197, 245, 239, 150, 220, 213, 44, 90, 232, 149, 80, 156, 106, 236, 108, 53, 47, 144, 119, 126, 255, 153, 132, 209, 197, 45, 48, 179, 77, 159, 181, 8, 169, 209, 84, 83, 69, 106, 151, 75, 246, 13, 182, 56, 181, 42, 147, 133, 70, 38, 234, 38, 148, 9, 163, 38, 80, 166, 29, 66, 168, 198, 26, 138, 57, 39, 124, 235, 38, 134, 156, 208, 117, 219, 36, 37, 5, 58, 82, 96, 237, 236, 243, 50, 103, 253, 233, 120, 238, 142, 68, 218, 138, 237, 12, 47, 243, 186, 21, 132, 130, 91, 199, 243, 37, 178, 10, 132, 230, 192, 24, 106, 33, 94, 136, 52, 7, 154, 38, 17, 141, 114, 80, 186, 134, 169, 70, 9, 176, 125, 194, 195, 231, 121, 50, 51, 123, 156, 60, 82, 234, 143, 23, 196, 25, 135, 6, 180, 76, 126, 124, 225, 58, 19, 143, 213, 183, 107, 109, 131, 196, 22, 36, 173, 78, 248, 71, 124];
+
+    var should_be_out_bits[192 * 8];
+    for (var i = 0; i < 192; i++) {
+        for (var j = 0; j < 8; j++) {
+            should_be_out_bits[i * 8 + j] = (should_be_out[i] >> j) & 1;
+        }
+    }
+
+    component shake = SHAKE256(264, 1536);
+    for (var i = 0; i < 264; i++) {
+        shake.inp[i] <== 0;
     }
 
     var RESULT = 1;
-    for (var i=0; i<32; i++) {
-        RESULT = RESULT && (shake.out_bytes[i] == should_be_out[i]);
+    for (var i=0; i<1536; i++) {
+        RESULT = RESULT && (shake.out[i] == should_be_out_bits[i]);
     }
 
     signal output res <-- RESULT;
