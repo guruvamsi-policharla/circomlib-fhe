@@ -109,6 +109,7 @@ template TestNTTmul() {
     var RESULT = 1;
     for (var i=0; i<n; i++) {
         RESULT = RESULT && (should_be_out[i] == out[i]);
+        RESULT = RESULT && (in1_in2_hat[i] == in1_in2_hat_fixed[i]);
     }
 
     log("RESULT: ", RESULT, "\n");
