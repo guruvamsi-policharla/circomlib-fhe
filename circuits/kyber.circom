@@ -4,6 +4,28 @@ include "half_ntt.circom";
 include "add.circom";
 include "lwe.circom";
 
+template samplePolyCBD(l,eta) {
+    var n = 256;
+    var q = 3329;
+    assert(l == 2*eta*n);
+
+    signal input b[l];
+    signal output a[n];
+
+    var x = 0;
+    var y = 0;
+    for(var i = 0; i < n; i++) {
+        for(var j = 0; j < eta; j++) {
+            x += b[2*eta*i + j];
+            y += b[2*eta*i + j + eta];
+        }
+        a[i] <== FastSubMod(q)([x,y]);
+        x = 0;
+        y = 0;
+    }
+}
+    
+
 template kyber_enc() {
     var q = 3329;
     var n = 256;
