@@ -3,8 +3,9 @@ pragma circom 2.1.0;
 include "half_ntt.circom";
 include "add.circom";
 include "lwe.circom";
-include "poseidon2/poseidon2_hash.circom";
+include "sha2/sha256/sha256_hash_bits.circom";
 include "sha3/sha3_bits.circom";
+include "circomlib/circuits/bitify.circom";
 
 template samplePolyCBD(l,eta) {
     var n = 256;
@@ -175,14 +176,43 @@ template kyber_enc() {
         compressed_v[i] <== ModSwitchInt(1<<4, q)(v[i]);
     }
 
-    signal output h;
-    
-    signal poseidon_inputs[3*n];
+    // convert to bytes according to the spec to get c1 and c2
+    signal c1[n]; // 256*2 entries in 2^10 amounts to 640 bytes
+    signal c2[n]; // 256*1 entries in 2^4 amounts to 128 bytes
+
+    // convert compressed_u and compressed_v to bits using Num2Bits
+    signal compressed_u_bits[2*n*10];
+    signal compressed_v_bits[n*4];
+
     for (var i = 0; i < n; i++) {
-        poseidon_inputs[i] <== compressed_u[0][i];
-        poseidon_inputs[n + i] <== compressed_u[1][i];
-        poseidon_inputs[2*n + i] <== compressed_v[i];
+        var out[10] = Num2Bits(10)(compressed_u[0][i]);
+        for (var j = 0; j < 10; j++) {
+            compressed_u_bits[10*i + j] <== out[j];
+        }
     }
 
-    h <== Poseidon2_hash(3*n)(poseidon_inputs);
+    for (var i = 0; i < n; i++) {
+        var out[10] = Num2Bits(10)(compressed_u[1][i]);
+        for (var j = 0; j < 10; j++) {
+            compressed_u_bits[10*n + 10*i + j] <== out[j];
+        }
+    }
+
+    for (var i = 0; i < n; i++) {
+        var out[4] = Num2Bits(4)(compressed_v[i]);
+        for (var j = 0; j < 4; j++) {
+            compressed_v_bits[4*i + j] <== out[j];
+        }
+    }
+    
+    // compute the SHA256 hash of the concatenation of c1 and c2
+    signal sha256_input[2*n*10 + n*4];
+    for (var i = 0; i < 2*n*10; i++) {
+        sha256_input[i] <== compressed_u_bits[i];
+    }
+    for (var i = 0; i < n*4; i++) {
+        sha256_input[2*n*10 + i] <== compressed_v_bits[i];
+    }
+
+    signal output h[32] <== Sha256_hash_bits_digest(2*n*10 + n*4)(sha256_input);
 }
