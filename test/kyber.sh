@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# mkdir -p out
+mkdir -p out
 
-# circom main_kyber.circom -l .. --r1cs --c -o out
+circom main_kyber.circom -l .. --r1cs --c -o out
 
 cd out/main_kyber_cpp
  
@@ -12,7 +12,12 @@ echo "{\"m\": [1665, 1665, 0, 1665, 0, 1665, 1665, 0, 1665, 0, 0, 1665, 1665, 16
 
 ./main_kyber input.json witness.wtns
 
-# cd ../..
+cd ..
 
-# rm -rf out/main_kyber_cpp
+snarkjs groth16 setup main_kyber.r1cs pot12_final.ptau main_kyber.zkey
 
+snarkjs zkey export verificationkey main_kyber.zkey verification_key.json
+
+snarkjs groth16 prove main_kyber.zkey main_kyber_cpp/witness.wtns proof.json public.json
+
+snarkjs zkey export solidityverifier main_kyber.zkey verifier.sol
