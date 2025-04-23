@@ -214,5 +214,20 @@ template kyber_enc() {
         sha256_input[2*n*10 + i] <== compressed_v_bits[i];
     }
 
-    signal output h[32] <== Sha256_hash_bits_digest(2*n*10 + n*4)(sha256_input);
+    signal h[32] <== Sha256_hash_bits_digest(2*n*10 + n*4)(sha256_input);
+
+    signal output h0;
+    signal output h1;
+
+    var sum = 0;
+    for (var i = 0; i < 16; i++) {
+        sum += h[i]*(1<<(8*i));
+    }
+    h0 <== sum;
+
+    sum = 0;
+    for (var i = 16; i < 32; i++) {
+        sum += h[i]*(1<<(8*(i-16)));
+    }
+    h1 <== sum;
 }
