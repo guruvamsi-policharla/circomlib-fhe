@@ -2,6 +2,7 @@ pragma circom 2.1.0;
 
 include "../circuits/kyber.circom";
 include "../circuits/sha3/sha3_bits.circom";
+include "../circuits/sha2/sha256/sha256_hash_bytes.circom";
 
 template TestEnc() {
     log("\n********** TEST KYBER **********\n");
@@ -52,16 +53,30 @@ template TestEnc() {
     }
 
     // hash using sha256
-    signal sha256_input[2*n*10 + n*4];
+    signal sha256_input_bits[2*n*10 + n*4];
     for (var i = 0; i < 2*n*10; i++) {
-        sha256_input[i] <== compressed_u_bits[i];
+        sha256_input_bits[i] <== compressed_u_bits[i];
     }
     for (var i = 0; i < n*4; i++) {
-        sha256_input[2*n*10 + i] <== compressed_v_bits[i];
+        sha256_input_bits[2*n*10 + i] <== compressed_v_bits[i];
     }
 
-    signal should_be_h[32] <== Sha256_hash_bits_digest(2*n*10 + n*4)(sha256_input);
+    // convert sha256_input_bits into bytes
+    var sha256_input[(2*n*10 + n*4)/8];
+    for (var i = 0; i < (2*n*10 + n*4)/8; i++) {
+        var sum = 0;
+        for (var j = 0; j < 8; j++) {
+            sum += sha256_input_bits[i*8 + j] * (1 << j);
+        }
+        sha256_input[i] = sum;
+    }
     
+    signal should_be_h[32] <== Sha256_hash_bytes_digest((2*n*10 + n*4)/8)(sha256_input);
+    
+    for (var i = 0; i < 32; i++) {
+        log("should_be_h[", i, "]: ", should_be_h[i], "\n");
+    }
+
     var should_be_h0;
     var should_be_h1;
 

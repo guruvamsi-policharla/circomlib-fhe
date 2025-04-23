@@ -3,7 +3,7 @@ pragma circom 2.1.0;
 include "half_ntt.circom";
 include "add.circom";
 include "lwe.circom";
-include "sha2/sha256/sha256_hash_bits.circom";
+include "sha2/sha256/sha256_hash_bytes.circom";
 include "sha3/sha3_bits.circom";
 include "circomlib/circuits/bitify.circom";
 
@@ -214,7 +214,22 @@ template kyber_enc() {
         sha256_input[2*n*10 + i] <== compressed_v_bits[i];
     }
 
-    signal h[32] <== Sha256_hash_bits_digest(2*n*10 + n*4)(sha256_input);
+    // convert to bytes
+    signal sha256_input_bytes[(2*n*10 + n*4)/8];
+    for (var i = 0; i < (2*n*10 + n*4)/8; i++) {
+        sha256_input_bytes[i] <== Bits2Num(8)(
+            [sha256_input[8*i], 
+            sha256_input[8*i+1], 
+            sha256_input[8*i+2], 
+            sha256_input[8*i+3], 
+            sha256_input[8*i+4], 
+            sha256_input[8*i+5], 
+            sha256_input[8*i+6], 
+            sha256_input[8*i+7]]
+        );
+    }
+
+    signal h[32] <== Sha256_hash_bytes_digest((2*n*10 + n*4)/8)(sha256_input_bytes);
 
     signal output h0;
     signal output h1;
