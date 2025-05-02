@@ -20,4 +20,6 @@ snarkjs zkey export verificationkey main_kyber.zkey verification_key.json
 
 snarkjs groth16 prove main_kyber.zkey main_kyber_cpp/witness.wtns proof.json public.json
 
+snarkjs groth16 verify verification_key.json public.json proof.json
+
 snarkjs zkey export solidityverifier main_kyber.zkey verifier.sol
